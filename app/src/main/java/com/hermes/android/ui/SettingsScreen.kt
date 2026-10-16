@@ -27,7 +27,10 @@ fun SettingsScreen(
     var keyInput by remember { mutableStateOf(apiKey) }
     var urlInput by remember { mutableStateOf(baseUrl) }
     var testResult by remember { mutableStateOf<Boolean?>(null) }
+    var isTesting by remember { mutableStateOf(false) }
+    var saved by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -39,7 +42,8 @@ fun SettingsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -79,6 +83,10 @@ fun SettingsScreen(
                     onClick = {
                         viewModel.setBaseUrl(urlInput)
                         viewModel.setApiKey(keyInput)
+                        saved = true
+                        scope.launch {
+                            snackbarHostState.showSnackbar("已保存")
+                        }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -89,13 +97,30 @@ fun SettingsScreen(
                     onClick = {
                         viewModel.setBaseUrl(urlInput)
                         viewModel.setApiKey(keyInput)
+                        isTesting = true
+                        testResult = null
                         scope.launch {
-                            testResult = viewModel.api.testConnection()
+                            try {
+                                testResult = viewModel.api.testConnection()
+                            } catch (e: Exception) {
+                                testResult = false
+                                snackbarHostState.showSnackbar("测试失败: ${e.message}")
+                            } finally {
+                                isTesting = false
+                            }
                         }
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    enabled = !isTesting
                 ) {
-                    Text("测试连接")
+                    if (isTesting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("测试连接")
+                    }
                 }
             }
 
