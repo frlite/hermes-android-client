@@ -15,10 +15,10 @@ data class Message(
 
 data class Conversation(
     val id: String = java.util.UUID.randomUUID().toString(),
-    val title: String = "新对话",
+    var title: String = "新对话",
     val messages: MutableList<Message> = mutableListOf(),
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    var updatedAt: Long = System.currentTimeMillis()
 )
 
 class ConversationStore(context: Context) {

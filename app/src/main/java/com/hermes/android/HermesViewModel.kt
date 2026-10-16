@@ -71,7 +71,7 @@ class HermesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun sendMessage(content: String) {
-        val conv = _currentConversation.value ?: newConversation()
+        val conv = _currentConversation.value ?: return
         val userMsg = Message("user", content)
         store.addMessage(conv.id, userMsg)
         _currentConversation.value = store.getById(conv.id)
